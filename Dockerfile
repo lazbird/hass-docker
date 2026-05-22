@@ -18,3 +18,6 @@ RUN \
   touch home-assistant.log && \
   /install.sh && \
   cd /config
+
+# 在网络安装完成后，复制本地自定义组件（不影响已下载的组件）
+COPY rootfs/hacs/custom_components/ /hacs/custom_components/ 
