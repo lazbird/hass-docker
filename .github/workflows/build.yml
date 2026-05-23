@@ -11,8 +11,7 @@ on:
     - cron: "0 20 * * *"
 
 env:
-  DOCKERHUB_REPO: ${{ secrets.HACN_USERNAME }}/hacn
-  GITHUB_CR_REPO: ghcr.io/hasscc/hacn
+  GITHUB_CR_REPO: ghcr.io/lazbird/hacn
 
 jobs:
   build:
@@ -22,7 +21,7 @@ jobs:
       matrix:
         version: |-
           ${{ fromJson(
-          github.event.inputs.version == '' && '["","stable","dev","latest"]' || '[""]'
+          github.event.inputs.version == '' && '["","stable","latest"]' || '[""]'
           ) }}
         addons: ['', mqtt, nodered, addons]
 
@@ -66,9 +65,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ env.DOCKERHUB_REPO }}
-            ${{ env.GITHUB_CR_REPO }}
+          images: ${{ env.GITHUB_CR_REPO }}
           tags: ${{ env.ALL_TAGS }}
 
       - name: Checkout code
@@ -79,12 +76,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.HACN_USERNAME }}
-          password: ${{ secrets.HACN_PASSWORD }}
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -104,26 +95,3 @@ jobs:
             VERSION=${{ env.VERSION }}
             ADDONS=${{ matrix.addons }}
           platforms: linux/amd64,linux/arm64
-
-  sync:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Sync images
-        uses: hhyasdf/image-sync-action@main
-        with:
-          auth_file: .sync/auth.yaml
-          images_file: .sync/images.yaml
-        env:
-          ALIYUN_CR_USER: ${{ secrets.ALIYUN_CR_USER }}
-          ALIYUN_CR_PASS: ${{ secrets.ALIYUN_CR_PASS }}
-          QCLOUD_CR_USER: ${{ secrets.QCLOUD_CR_USER }}
-          QCLOUD_CR_PASS: ${{ secrets.QCLOUD_CR_PASS }}
-
-      - name: Pull images
-        run: |
-          docker pull ghcr.nju.edu.cn/hasscc/hacn:stable
-          docker pull ghcr.nju.edu.cn/hasscc/hacn:addons
