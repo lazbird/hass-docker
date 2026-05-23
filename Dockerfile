@@ -14,7 +14,7 @@ ENV ALWAYS_INSTALL=true \
 COPY rootfs/ /
 
 RUN \
-  mkdir /hacs && cd /hacs && \
+  mkdir -p /hacs && cd /hacs && \
   touch home-assistant.log && \
   /install.sh && \
   cd /config
