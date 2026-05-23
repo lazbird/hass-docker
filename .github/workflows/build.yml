@@ -23,7 +23,7 @@ jobs:
           ${{ fromJson(
           github.event.inputs.version == '' && '["","stable","latest"]' || '[""]'
           ) }}
-        addons: ['', mqtt, nodered, addons]
+        addons: ['']
 
     steps:
       - name: Docker tags
