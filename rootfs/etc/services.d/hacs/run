@@ -4,19 +4,14 @@ hacs_components=/hacs/custom_components
 
 cd /config
 
-# 自动注入 http 配置到 configuration.yaml
-if [ ! -f /config/configuration.yaml ]; then
-    bashio::log.info "Creating configuration.yaml with http configuration"
-    cat > /config/configuration.yaml <<EOF
-http:
-  server_port: 8123
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 10.0.0.0/8
-    - 172.16.0.0/12
-    - 192.168.0.0/16
-EOF
-elif ! grep -q "^http:" /config/configuration.yaml; then
+# 后台等待 HA 创建 configuration.yaml，然后追加 http 配置
+(
+  while [ ! -f /config/configuration.yaml ]; do
+    sleep 5
+  done
+  # 额外等待，确保 HA 完成文件写入
+  sleep 10
+  if ! grep -q "^http:" /config/configuration.yaml; then
     bashio::log.info "Adding http configuration to configuration.yaml"
     cat >> /config/configuration.yaml <<EOF
 
@@ -28,7 +23,8 @@ http:
     - 172.16.0.0/12
     - 192.168.0.0/16
 EOF
-fi
+  fi
+) &
 
 bashio::log.info "always_upgrade=$ALWAYS_UPGRADE"
 if [ "$ALWAYS_UPGRADE" = "true" ]; then
