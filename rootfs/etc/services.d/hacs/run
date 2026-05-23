@@ -5,7 +5,18 @@ hacs_components=/hacs/custom_components
 cd /config
 
 # 自动注入 http 配置到 configuration.yaml
-if [ -f /config/configuration.yaml ] && ! grep -q "^http:" /config/configuration.yaml; then
+if [ ! -f /config/configuration.yaml ]; then
+    bashio::log.info "Creating configuration.yaml with http configuration"
+    cat > /config/configuration.yaml <<EOF
+http:
+  server_port: 8123
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+EOF
+elif ! grep -q "^http:" /config/configuration.yaml; then
     bashio::log.info "Adding http configuration to configuration.yaml"
     cat >> /config/configuration.yaml <<EOF
 
