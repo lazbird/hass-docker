@@ -26,6 +26,10 @@ http:
     - 192.168.0.0/16
 EOF
   fi
+  # 重启 HA 使 http 配置生效
+  bashio::log.info "Restarting Home Assistant to apply http configuration"
+  sleep 5
+  s6-svc -t /run/s6/service/homeassistant
 ) &
 
 bashio::log.info "always_upgrade=$ALWAYS_UPGRADE"
